@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"flag"
+	"fmt"
 	"log/slog"
 	"os"
 	"strings"
@@ -17,9 +18,13 @@ import (
 	_ "github.com/lib/pq"
 	"greelight.techkunstler.com/internal/data"
 	"greelight.techkunstler.com/internal/mailer"
+	"greelight.techkunstler.com/internal/vcs"
 )
 
-const version = "1.0.0"
+// const version = "1.0.0"
+var (
+	version = vcs.Version()
+)
 
 // Add a db struct field to hold the configuration settings for our database connection pool
 // For now this only holds the DSN, (Data Source Name) which we will read in from a
@@ -75,7 +80,7 @@ func main() {
 	// default to using our development DSN if no flag is provided.
 
 	/* 	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://greenlight:pa55word@localhost/greenlight", "PostgreSQL DSN") */
-	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("GREENLIGHT_DB_DSN"), "PostgresSQL DSN")
+	flag.StringVar(&cfg.db.dsn, "db-dsn", "", "PostgresSQL DSN")
 
 	// Read the connection pool settings from command-line flags into theconfig struct.
 	// Notice that thedefault values we're using are the ones we discussed above?
@@ -114,7 +119,14 @@ func main() {
 		return nil
 	})
 
+	// Create a new version boolean flag with the default value of false.
+	displayVersion := flag.Bool("version", false, "Display version and exit")
+
 	flag.Parse()
+	if *displayVersion {
+		fmt.Printf("Version:\t%s\n", version)
+		os.Exit(0)
+	}
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	// Call the openDB() helper function (see below) to create the connection pool,

@@ -101,7 +101,7 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 		// *json.SyntaxErro. If it does, then return a plain-english error message
 		// which includes the ocation of the problem.
 		case errors.As(err, &syntaxError):
-			return fmt.Errorf("body contains badly-formed JSON (at character %d)", syntaxError)
+			return fmt.Errorf("body contains badly-formed JSON (at character %x)", syntaxError)
 			// In some circumstances Decode() may also return an io.ErrUnexpectedEOF error
 			// for syntax errors in the JSON. So we check for this using errors.Is() and
 			// return a generic error message. There is an open issue regarding this a
@@ -161,7 +161,7 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 	// is additional data in the request body and we return our own custom error message.
 	err = dec.Decode(&struct{}{})
 	if !errors.Is(err, io.EOF) {
-		return errors.New("Body must only contain a single JSON object")
+		return errors.New("body must only contain a single JSON object")
 	}
 	return nil
 }
